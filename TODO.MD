@@ -1,2 +1,2 @@
 Todo : 
-1. 
+1. Label not showing on the legend

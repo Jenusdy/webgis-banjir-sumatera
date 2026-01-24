@@ -36,7 +36,7 @@
         </div>
 
         <!-- Legend -->
-        <div class="absolute bottom-12 left-6 max-w-xs z-[999] bg-white/95 backdrop-blur rounded-lg shadow-xl max-w-xs max-lg:right-6 max-lg:left-auto max-lg:max-w-[calc(100vw-8rem)]">
+        <div class="absolute bottom-12 left-6 max-w-md z-[999] bg-white/95 backdrop-blur rounded-lg shadow-xl max-w-md max-lg:right-6 max-lg:left-auto max-lg:max-w-[calc(100vw-6rem)]">
           <!-- Legend Header with Toggle -->
           <div class="p-3 border-b border-slate-200 flex items-center justify-between cursor-pointer" @click="legendExpanded = !legendExpanded">
             <h3 class="font-semibold text-slate-800 text-sm flex items-center gap-2">
@@ -52,13 +52,31 @@
 
           <!-- Legend Content -->
           <div v-show="legendExpanded" class="p-4 max-h-[50vh] overflow-y-auto">
-            <div class="space-y-2">
-              <div v-for="layer in activeLayers" :key="layer.id" class="flex flex-col gap-1">
-                <div class="text-xs font-medium text-slate-700">{{ layer.name }}</div>
+            <div class="space-y-3">
+              <div v-for="layer in activeLayers" :key="layer.id" class="flex flex-col gap-2">
+                <div class="text-sm font-semibold text-slate-800 border-b border-slate-200 pb-1">{{ layer.name }}</div>
+
+                <!-- Custom Legend for layers with predefined data -->
+                <div v-if="legendDefinitions[layer.id]" class="space-y-2 py-2">
+                  <div v-for="(item, idx) in legendDefinitions[layer.id]" :key="idx" class="flex items-center gap-3">
+                    <div
+                      class="flex-shrink-0 shadow-sm"
+                      :class="item.shape === 'circle' ? 'w-4 h-4 rounded-full' : 'w-10 h-10 rounded'"
+                      :style="{
+                        backgroundColor: item.color,
+                        border: item.borderColor ? `3px solid ${item.borderColor}` : '2px solid #cbd5e1'
+                      }"
+                    ></div>
+                    <span class="text-sm text-slate-700 font-medium">{{ item.label }}</span>
+                  </div>
+                </div>
+
+                <!-- Fallback to image legend for boundary layers or layers without predefined data -->
                 <img
+                  v-else
                   :src="getLegendUrl(layer.id)"
                   :alt="layer.name"
-                  class="w-auto"
+                  class="w-full rounded border border-slate-100"
                   @error="handleLegendError"
                 />
               </div>
@@ -288,10 +306,61 @@ const toggleLayer = (layer) => {
   }
 }
 
+// Predefined legend data for each layer
+const legendDefinitions = {
+  'prediksi_wilayah_banjir': [
+    { label: 'Prediksi Wilayah Banjir', color: 'rgba(166, 206, 227, 0.5)', borderColor: 'rgba(18, 72, 107, 1)' }
+  ],
+  'perkiraan_desa_terdampak': [
+    { label: 'Desa yang Tidak Terdampak', color: 'rgb(74, 200, 57)', borderColor: 'rgb(35, 35, 35)' },
+    { label: 'Desa yang Diperkirakan Terdampak', color: 'rgb(179, 20, 23)', borderColor: 'rgb(128, 14, 16)' }
+  ],
+  'lahan_baku_sawah__lbs_': [
+    { label: 'Wilayah Lahan Baku Sawah Tidak Terdampak Banjir', color: 'rgba(97, 208, 77, 0.71)', borderColor: 'rgba(36, 111, 30, 1)' },
+    { label: 'Wilayah Lahan Baku Sawah yang Diperkirakan Terdampak Banjir', color: 'rgba(168, 81, 0, 0.74)', borderColor: 'rgba(215, 25, 28, 1)' },
+    { label: 'Wilayah Lahan Baku Sawah yang Diperkirakan dalam Radius 500m', color: 'rgba(253, 191, 111, 0.84)', borderColor: 'rgba(255, 166, 0, 1)' }
+  ],
+  'jumlah_kk_dtsen': [
+    { label: '0 - 200', color: 'rgb(255, 255, 255)', borderColor: 'rgb(35, 35, 35)' },
+    { label: '200 - 500', color: 'rgb(255, 128, 128)', borderColor: 'rgb(35, 35, 35)' },
+    { label: 'Diatas 500', color: 'rgb(255, 0, 0)', borderColor: 'rgb(35, 35, 35)' }
+  ],
+  'perkiraan_jumlah_keluarga_terdampak': [
+    { label: 'Tidak ada Keluarga Terdampak', color: 'rgba(255, 255, 255, 0.346)' },
+    { label: '0 - 500 Keluarga Terdampak', color: 'rgb(255, 128, 128)' },
+    { label: 'Diatas 500 Keluarga Terdampak', color: 'rgb(255, 0, 0)' }
+  ],
+  'rumah_tangga_dtsen': [
+    { label: 'Rumah Tangga Tani dalam Desa Bencana', color: 'rgb(255, 210, 0)', shape: 'circle', borderColor: 'rgb(255, 255, 255)' },
+    { label: 'Rumah Tangga Tani yang Diperkirakan Terdampak', color: 'rgb(231, 65, 90)', shape: 'circle', borderColor: 'rgb(255, 255, 255)' }
+  ],
+  'rumah_tangga_pertanian': [
+    { label: 'Rumah Tangga Tani dalam Desa Bencana', color: 'rgb(51, 160, 44)', shape: 'circle', borderColor: 'rgb(255, 255, 255)' },
+    { label: 'Rumah Tangga Tani yang Diperkirakan Terdampak', color: 'rgb(231, 65, 90)', shape: 'circle', borderColor: 'rgb(255, 255, 255)' }
+  ],
+  'infrastruktur_yang_diperkirakan_terdampak': [
+    { label: 'Ekonomi', color: 'rgb(255, 127, 0)', shape: 'circle' },
+    { label: 'Kesehatan', color: 'rgb(176, 200, 41)', shape: 'circle' },
+    { label: 'Pendidikan', color: 'rgb(152, 72, 213)', shape: 'circle' },
+    { label: 'Perbankan', color: 'rgb(206, 175, 238)', shape: 'circle' }
+  ],
+  'desa_sampel_pkl_polstat_stis_2026': [
+    { label: 'Desa Sampel PKL Polstat STIS 2026', color: 'rgb(38, 23, 206)', borderColor: 'rgb(35, 35, 35)' }
+  ]
+}
+
 // Get GeoServer Legend URL
 const getLegendUrl = (layerId) => {
   const layerName = `floodmap_sumatera_2025:${layerId}`
-  return `https://geoserver.bps.go.id/wms?REQUEST=GetLegendGraphic&LAYER=${layerName}&FORMAT=image/png&WIDTH=200&HEIGHT=40&LEGEND_OPTIONS=dx:0.2;dy:0.2;mx:2;my:2;fontSize:12;forceLabels:off`
+  // Check if this is a boundary layer (batas wilayah)
+  const isBoundaryLayer = layerId.startsWith('batas_wilayah_')
+
+  // For boundary layers, don't show labels. For other layers, show labels with better formatting.
+  if (isBoundaryLayer) {
+    return `https://geoserver.bps.go.id/wms?REQUEST=GetLegendGraphic&LAYER=${layerName}&FORMAT=image/png&WIDTH=350&HEIGHT=60&LEGEND_OPTIONS=dx:0.5;dy:0.5;mx:4;my:4;fontSize:18;forceLabels:off`
+  } else {
+    return `https://geoserver.bps.go.id/wms?REQUEST=GetLegendGraphic&LAYER=${layerName}&FORMAT=image/png&WIDTH=400&HEIGHT=80&LEGEND_OPTIONS=dx:0.5;dy:0.5;mx:5;my:5;fontSize:20;forceLabels:on;fontStyle:bold;labelMargin:10`
+  }
 }
 
 // Handle legend image load error

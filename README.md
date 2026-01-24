@@ -85,6 +85,30 @@ npm run build
 npm run preview
 ```
 
+## 🚀 Deployment
+
+### Production URL
+https://sig.bps.go.id/webgis-banjir-sumatera/
+
+### Build & Deploy
+
+1. Build aplikasi:
+```bash
+npm run build
+```
+
+2. Folder `dist` akan di-generate
+3. Upload seluruh isi folder `dist` ke server di path:
+   ```
+   /var/www/html/sig.bps.go.id/webgis-banjir-sumatera/
+   ```
+
+### Konfigurasi Base Path
+
+Aplikasi sudah dikonfigurasi dengan base path `/webgis-banjir-sumatera/` di file `vite.config.js`. Jika perlu mengubah base path, update konfigurasi tersebut.
+
+
+
 ## 🚀 Penggunaan
 
 ### Mengontrol Layer
