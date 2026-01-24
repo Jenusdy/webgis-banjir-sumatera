@@ -59,9 +59,34 @@
                 <!-- Custom Legend for layers with predefined data -->
                 <div v-if="legendDefinitions[layer.id]" class="space-y-2 py-2">
                   <div v-for="(item, idx) in legendDefinitions[layer.id]" :key="idx" class="flex items-center gap-3">
+                    <!-- Line style for boundary layers -->
                     <div
-                      class="flex-shrink-0 shadow-sm"
-                      :class="item.shape === 'circle' ? 'w-4 h-4 rounded-full' : 'w-10 h-10 rounded'"
+                      v-if="item.lineStyle === 'dashed'"
+                      class="w-10 h-0.5 flex-shrink-0 border-dashed border-b-2"
+                      :style="{
+                        borderColor: item.lineColor
+                      }"
+                    ></div>
+                    <div
+                      v-else-if="item.lineStyle === 'solid'"
+                      class="w-10 h-0.5 flex-shrink-0 border-solid border-b-2"
+                      :style="{
+                        borderColor: item.lineColor
+                      }"
+                    ></div>
+                    <!-- Circle marker style -->
+                    <div
+                      v-else-if="item.shape === 'circle'"
+                      class="w-4 h-4 rounded-full flex-shrink-0 shadow-sm"
+                      :style="{
+                        backgroundColor: item.color,
+                        border: item.borderColor ? `3px solid ${item.borderColor}` : '2px solid #cbd5e1'
+                      }"
+                    ></div>
+                    <!-- Fill/rectangle style for polygon layers -->
+                    <div
+                      v-else
+                      class="w-10 h-10 rounded flex-shrink-0 shadow-sm"
                       :style="{
                         backgroundColor: item.color,
                         border: item.borderColor ? `3px solid ${item.borderColor}` : '2px solid #cbd5e1'
@@ -340,6 +365,18 @@ const legendDefinitions = {
   ],
   'desa_sampel_pkl_polstat_stis_2026': [
     { label: 'Desa Sampel PKL Polstat STIS 2026', color: 'rgb(38, 23, 206)', borderColor: 'rgb(35, 35, 35)' }
+  ],
+  'batas_wilayah_desa_kelurahan': [
+    { label: 'Batas Wilayah Desa/Kelurahan', lineStyle: 'dashed', lineColor: 'rgb(215, 25, 28)' }
+  ],
+  'batas_wilayah_kecamatan': [
+    { label: 'Batas Wilayah Kecamatan', lineStyle: 'dashed', lineColor: 'rgb(255, 127, 0)' }
+  ],
+  'batas_wilayah_kabupaten_kota': [
+    { label: 'Batas Wilayah Kabupaten/Kota', lineStyle: 'dashed', lineColor: 'rgb(0, 0, 0)' }
+  ],
+  'batas_wilayah_provinsi': [
+    { label: 'Batas Wilayah Provinsi', lineStyle: 'solid', lineColor: 'rgb(0, 0, 0)' }
   ]
 }
 
