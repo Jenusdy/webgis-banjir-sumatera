@@ -95,12 +95,6 @@
           >
             <option value="osm">Peta Jalan (OSM)</option>
             <option value="hot">Peta Bantuan Kemanusiaan (HOT)</option>
-            <option value="streets">Peta Jalan (Esri)</option>
-            <option value="satellite">Citra Satelit</option>
-            <option value="hybrid">Hibrida</option>
-            <option value="terrain">Peta Topografi</option>
-            <option value="topo">Peta Topo</option>
-            <option value="dark">Peta Gelap</option>
           </select>
         </div>
       </main>
