@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen w-screen overflow-hidden flex flex-col">
+  <div class="min-h-screen flex flex-col">
     <!-- Header -->
     <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg z-50">
       <div class="px-4 py-3 flex items-center justify-between">
@@ -12,10 +12,8 @@
             <p class="text-blue-200 text-xs">Dikembangkan oleh Direktorat Metodologi Statistik dan Sains Data</p>
           </div>
         </div>
-        <button
-          @click="toggleSidebar()"
-          class="lg:hidden p-2 hover:bg-blue-700 rounded-lg transition-colors relative z-50"
-        >
+        <button @click="toggleSidebar()"
+          class="lg:hidden p-2 hover:bg-blue-700 rounded-lg transition-colors relative z-50">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
           </svg>
@@ -24,142 +22,118 @@
     </header>
 
     <!-- Main Content -->
-    <div class="flex-1 flex relative">
+    <div class="flex-1 flex flex-col">
       <!-- Map Container -->
-      <main class="flex-1 relative z-10">
-        <MapView ref="mapView" :activeLayers="activeLayers" />
+      <div class="flex-none flex relative h-[90vh]">
+        <main class="flex-1 relative z-10 h-full">
+          <MapView ref="mapView" :activeLayers="activeLayers" />
 
-        <!-- Overlay Info -->
-        <div class="absolute top-4 left-4 bg-white/95 backdrop-blur rounded-lg shadow-lg p-3 z-[1000] max-w-xs max-lg:hidden">
-          <div class="text-xs text-slate-500 mb-1">Koordinat</div>
-          <div class="font-mono text-sm text-slate-800" id="coordinates">Hover peta untuk mendapatkan koordinat</div>
-        </div>
-
-        <!-- Legend -->
-        <div class="absolute bottom-12 left-6 max-w-md z-[999] bg-white/95 backdrop-blur rounded-lg shadow-xl max-w-md max-lg:right-6 max-lg:left-auto max-lg:max-w-[calc(100vw-6rem)]">
-          <!-- Legend Header with Toggle -->
-          <div class="p-3 border-b border-slate-200 flex items-center justify-between cursor-pointer" @click="legendExpanded = !legendExpanded">
-            <h3 class="font-semibold text-slate-800 text-sm flex items-center gap-2">
-              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          <!-- Legend -->
+          <div
+            class="absolute top-6 left-6 max-w-md z-[999] bg-white/95 backdrop-blur rounded-lg shadow-xl max-w-md max-lg:right-6 max-lg:left-auto max-lg:max-w-[calc(100vw-6rem)]">
+            <!-- Legend Header with Toggle -->
+            <div class="p-3 border-b border-slate-200 flex items-center justify-between cursor-pointer"
+              @click="legendExpanded = !legendExpanded">
+              <h3 class="font-semibold text-slate-800 text-sm flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                  </path>
+                </svg>
+                Legenda
+              </h3>
+              <svg class="w-4 h-4 text-slate-500 transition-transform duration-200"
+                :class="{ 'rotate-180': legendExpanded }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
               </svg>
-              Legenda
-            </h3>
-            <svg class="w-4 h-4 text-slate-500 transition-transform duration-200" :class="{ 'rotate-180': legendExpanded }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </div>
+            </div>
 
-          <!-- Legend Content -->
-          <div v-show="legendExpanded" class="p-4 max-h-[50vh] overflow-y-auto">
-            <div class="space-y-3">
-              <div v-for="layer in activeLayers" :key="layer.id" class="flex flex-col gap-2">
-                <div class="text-sm font-semibold text-slate-800 border-b border-slate-200 pb-1">{{ layer.name }}</div>
-
-                <!-- Custom Legend for layers with predefined data -->
-                <div v-if="legendDefinitions[layer.id]" class="space-y-2 py-2">
-                  <div v-for="(item, idx) in legendDefinitions[layer.id]" :key="idx" class="flex items-center gap-3">
-                    <!-- Line style for boundary layers -->
-                    <div
-                      v-if="item.lineStyle === 'dashed'"
-                      class="w-10 h-0.5 flex-shrink-0 border-dashed border-b-2"
-                      :style="{
-                        borderColor: item.lineColor
-                      }"
-                    ></div>
-                    <div
-                      v-else-if="item.lineStyle === 'solid'"
-                      class="w-10 h-0.5 flex-shrink-0 border-solid border-b-2"
-                      :style="{
-                        borderColor: item.lineColor
-                      }"
-                    ></div>
-                    <!-- Circle marker style -->
-                    <div
-                      v-else-if="item.shape === 'circle'"
-                      class="w-4 h-4 rounded-full flex-shrink-0 shadow-sm"
-                      :style="{
-                        backgroundColor: item.color,
-                        border: item.borderColor ? `3px solid ${item.borderColor}` : '2px solid #cbd5e1'
-                      }"
-                    ></div>
-                    <!-- Fill/rectangle style for polygon layers -->
-                    <div
-                      v-else
-                      class="w-10 h-10 rounded flex-shrink-0 shadow-sm"
-                      :style="{
-                        backgroundColor: item.color,
-                        border: item.borderColor ? `3px solid ${item.borderColor}` : '2px solid #cbd5e1'
-                      }"
-                    ></div>
-                    <span class="text-sm text-slate-700 font-medium">{{ item.label }}</span>
+            <!-- Legend Content -->
+            <div v-show="legendExpanded" class="p-4 max-h-[70vh] overflow-y-auto">
+              <div class="space-y-3">
+                <div v-for="layer in activeLayers" :key="layer.id" class="flex flex-col gap-2">
+                  <div class="text-sm font-semibold text-slate-800 border-b border-slate-200 pb-1">{{ layer.name }}
                   </div>
-                </div>
 
-                <!-- Fallback to image legend for boundary layers or layers without predefined data -->
-                <img
-                  v-else
-                  :src="getLegendUrl(layer.id)"
-                  :alt="layer.name"
-                  class="w-full rounded border border-slate-100"
-                  @error="handleLegendError"
-                />
-              </div>
-              <div v-if="activeLayers.length === 0" class="text-xs text-slate-500 italic text-center py-2">
-                Tidak ada layer aktif
+                  <!-- Custom Legend for layers with predefined data -->
+                  <div v-if="legendDefinitions[layer.id]" class="space-y-2 py-2">
+                    <div v-for="(item, idx) in legendDefinitions[layer.id]" :key="idx" class="flex items-center gap-3">
+                      <!-- Line style for boundary layers -->
+                      <div v-if="item.lineStyle === 'dashed'" class="w-10 h-0.5 flex-shrink-0 border-dashed border-b-2"
+                        :style="{
+                          borderColor: item.lineColor
+                        }"></div>
+                      <div v-else-if="item.lineStyle === 'solid'"
+                        class="w-10 h-0.5 flex-shrink-0 border-solid border-b-2" :style="{
+                          borderColor: item.lineColor
+                        }"></div>
+                      <!-- Circle marker style -->
+                      <div v-else-if="item.shape === 'circle'" class="w-4 h-4 rounded-full flex-shrink-0 shadow-sm"
+                        :style="{
+                          backgroundColor: item.color,
+                          border: item.borderColor ? `3px solid ${item.borderColor}` : '2px solid #cbd5e1'
+                        }"></div>
+                      <!-- Fill/rectangle style for polygon layers -->
+                      <div v-else class="w-10 h-10 rounded flex-shrink-0 shadow-sm" :style="{
+                        backgroundColor: item.color,
+                        border: item.borderColor ? `3px solid ${item.borderColor}` : '2px solid #cbd5e1'
+                      }"></div>
+                      <span class="text-sm text-slate-700 font-medium">{{ item.label }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Fallback to image legend for boundary layers or layers without predefined data -->
+                  <img v-else :src="getLegendUrl(layer.id)" :alt="layer.name"
+                    class="w-full rounded border border-slate-100" @error="handleLegendError" />
+                </div>
+                <div v-if="activeLayers.length === 0" class="text-xs text-slate-500 italic text-center py-2">
+                  Tidak ada layer aktif
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Basemap Switcher -->
-        <div class="absolute top-4 right-16 z-[999]">
-          <select
-            v-model="selectedBasemap"
-            class="bg-white px-3 py-1.5 rounded-lg shadow text-xs border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="osm">Peta Jalan (OSM)</option>
-            <option value="hot">Peta Bantuan Kemanusiaan (HOT)</option>
-          </select>
-        </div>
-      </main>
+          <!-- Basemap Switcher -->
+          <div class="absolute top-4 right-16 z-[999]">
+            <select v-model="selectedBasemap"
+              class="bg-white px-3 py-1.5 rounded-lg shadow text-xs border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="osm">Peta Jalan (OSM)</option>
+              <option value="hot">Peta Bantuan Kemanusiaan (HOT)</option>
+            </select>
+          </div>
+        </main>
 
-      <!-- Sidebar Layer Control -->
-      <aside
-        :class="[
+        <!-- Sidebar Layer Control -->
+        <aside :class="[
           'fixed lg:relative right-0 top-0 h-full bg-white shadow-xl transition-transform duration-300 ease-in-out',
-          'w-80 flex flex-col border-l border-slate-200',
+          'w-80 flex flex-col border-l border-slate-200 overflow-hidden min-h-0',
           sidebarOpen ? 'translate-x-0 z-50' : 'translate-x-full lg:translate-x-0 z-40'
-        ]"
-      >
-        <!-- Sidebar Header -->
-        <div class="p-4 border-b border-slate-200 bg-slate-50">
-          <h2 class="font-semibold text-slate-800 flex items-center gap-2">
-            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-            </svg>
-            Kontrol Layer
-          </h2>
-        </div>
+        ]">
+          <!-- Sidebar Header -->
+          <div class="p-4 border-b border-slate-200 bg-slate-50">
+            <h2 class="font-semibold text-slate-800 flex items-center gap-2">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                </path>
+              </svg>
+              Kontrol Layer
+            </h2>
+          </div>
 
-        <!-- Layer Groups -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-4">
-          <LayerGroup
-            v-for="group in layerGroups"
-            :key="group.id"
-            :group="group"
-            :activeLayers="activeLayers"
-            @toggle-layer="toggleLayer"
-          />
-        </div>
-      </aside>
+          <!-- Layer Groups -->
+          <div class="flex-1 overflow-y-auto p-4 space-y-4">
+            <LayerGroup v-for="group in layerGroups" :key="group.id" :group="group" :activeLayers="activeLayers"
+              @toggle-layer="toggleLayer" />
+          </div>
+        </aside>
 
-      <!-- Mobile Overlay -->
-      <div
-        v-if="sidebarOpen"
-        @click="toggleSidebar()"
-        class="fixed inset-0 bg-black/50 z-40 lg:hidden"
-      ></div>
+        <!-- Mobile Overlay -->
+        <div v-if="sidebarOpen" @click="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 lg:hidden"></div>
+      </div>
+
+      <!-- Data Table Section -->
+      <DataTable />
     </div>
   </div>
 </template>
@@ -168,6 +142,7 @@
 import { ref, reactive, watch, onMounted } from 'vue'
 import MapView from './components/MapView.vue'
 import LayerGroup from './components/LayerGroup.vue'
+import DataTable from './components/DataTable.vue'
 import bpsLogo from './assets/bps-logo.svg'
 
 const sidebarOpen = ref(false)
@@ -184,30 +159,30 @@ const layerGroups = [
     icon: 'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7',
     layers: [
       {
-        id: 'batas_wilayah_provinsi',
+        id: 'provinsi',
         name: 'Batas Wilayah Provinsi',
-        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:batas_wilayah_provinsi&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
+        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:provinsi&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
         visible: true,
         opacity: 1
       },
       {
-        id: 'batas_wilayah_kabupaten_kota',
+        id: 'kabupaten_kota',
         name: 'Batas Wilayah Kabupaten/Kota',
-        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:batas_wilayah_kabupaten_kota&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
+        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:kabupaten_kota&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
         visible: true,
         opacity: 1
       },
       {
-        id: 'batas_wilayah_kecamatan',
+        id: 'kecamatan',
         name: 'Batas Wilayah Kecamatan',
-        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:batas_wilayah_kecamatan&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
+        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:kecamatan&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
         visible: true,
         opacity: 1
       },
       {
-        id: 'batas_wilayah_desa_kelurahan',
+        id: 'desa_kelurahan_nagari',
         name: 'Batas Wilayah Desa/Kelurahan',
-        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:batas_wilayah_desa_kelurahan&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
+        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:desa_kelurahan_nagari&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
         visible: true,
         opacity: 1
       }
@@ -219,31 +194,17 @@ const layerGroups = [
     icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
     layers: [
       {
-        id: 'desa_sampel_pkl_polstat_stis_2026',
-        name: 'Desa Sampel PKL Polstat STIS',
-        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:desa_sampel_pkl_polstat_stis_2026&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
-        visible: false,
-        opacity: 1
-      },
-      {
-        id: 'perkiraan_desa_terdampak',
-        name: 'Perkiraan Desa Terdampak',
-        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:perkiraan_desa_terdampak&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
+        id: 'desa_pendataan_bps-stis',
+        name: 'Desa Pendataan BPS-STIS',
+        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:desa_pendataan_bps-stis&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
         visible: true,
         opacity: 1
       },
       {
-        id: 'perkiraan_jumlah_keluarga_terdampak',
-        name: 'Perkiraan Jumlah Keluarga Terdampak',
-        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:perkiraan_jumlah_keluarga_terdampak&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
-        visible: false,
-        opacity: 1
-      },
-      {
-        id: 'jumlah_kk_dtsen',
-        name: 'Jumlah KK DTSEN',
-        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:jumlah_kk_dtsen&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
-        visible: false,
+        id: 'desa_wilayah_bencana',
+        name: 'Desa Wilayah Bencana',
+        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:desa_wilayah_bencana&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
+        visible: true,
         opacity: 1
       }
     ]
@@ -254,23 +215,16 @@ const layerGroups = [
     icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z',
     layers: [
       {
-        id: 'rumah_tangga_dtsen',
-        name: 'Rumah Tangga DTSEN',
-        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:rumah_tangga_dtsen&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
+        id: 'perkiraan_bangunan_infrastruktur_terdampak',
+        name: 'Perkiraan Bangunan Infrastruktur Terdampak',
+        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:perkiraan_bangunan_infrastruktur_terdampak&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
         visible: false,
         opacity: 1
       },
       {
-        id: 'rumah_tangga_pertanian',
-        name: 'Rumah Tangga Pertanian',
-        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:rumah_tangga_pertanian&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
-        visible: false,
-        opacity: 1
-      },
-      {
-        id: 'infrastruktur_yang_diperkirakan_terdampak',
-        name: 'Infrastruktur yang Diperkirakan Terdampak',
-        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:infrastruktur_yang_diperkirakan_terdampak&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
+        id: 'perkiraan_bangunan_tempat_tinggal_terdampak',
+        name: 'Perkiraan Bangunan Tempat Tinggal Terdampak',
+        url: 'https://geoserver.bps.go.id/gwc/service/wmts?layer=floodmap_sumatera_2025:perkiraan_bangunan_tempat_tinggal_terdampak&style=&tilematrixset=WebMercatorQuad&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
         visible: false,
         opacity: 1
       }
@@ -278,7 +232,7 @@ const layerGroups = [
   },
   {
     id: 'poligon-tambahan',
-    name: 'Peta Lainnya',
+    name: 'Poligon Tambahan',
     icon: 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064',
     layers: [
       {
@@ -328,54 +282,41 @@ const toggleLayer = (layer) => {
 // Predefined legend data for each layer
 const legendDefinitions = {
   'prediksi_wilayah_banjir': [
-    { label: 'Prediksi Wilayah Banjir', color: 'rgba(166, 206, 227, 0.5)', borderColor: 'rgba(18, 72, 107, 1)' }
-  ],
-  'perkiraan_desa_terdampak': [
-    { label: 'Desa yang Tidak Terdampak', color: 'rgb(74, 200, 57)', borderColor: 'rgb(35, 35, 35)' },
-    { label: 'Desa yang Diperkirakan Terdampak', color: 'rgb(179, 20, 23)', borderColor: 'rgb(128, 14, 16)' }
+    { label: 'Prediksi Wilayah Banjir', color: 'rgba(0, 159, 238, 0.714)' }
   ],
   'lahan_baku_sawah__lbs_': [
-    { label: 'Wilayah Lahan Baku Sawah Tidak Terdampak Banjir', color: 'rgba(97, 208, 77, 0.71)', borderColor: 'rgba(36, 111, 30, 1)' },
-    { label: 'Wilayah Lahan Baku Sawah yang Diperkirakan Terdampak Banjir', color: 'rgba(168, 81, 0, 0.74)', borderColor: 'rgba(215, 25, 28, 1)' },
-    { label: 'Wilayah Lahan Baku Sawah yang Diperkirakan dalam Radius 500m', color: 'rgba(253, 191, 111, 0.84)', borderColor: 'rgba(255, 166, 0, 1)' }
+    { label: 'Lahan Sawah Tidak Terdampak', color: 'rgb(26, 122, 20)' },
+    { label: 'Lahan Sawah Terdampak', color: 'rgb(230, 162, 41)' }
   ],
-  'jumlah_kk_dtsen': [
-    { label: '0 - 200', color: 'rgb(255, 255, 255)', borderColor: 'rgb(35, 35, 35)' },
-    { label: '200 - 500', color: 'rgb(255, 128, 128)', borderColor: 'rgb(35, 35, 35)' },
-    { label: 'Diatas 500', color: 'rgb(255, 0, 0)', borderColor: 'rgb(35, 35, 35)' }
+  'perkiraan_bangunan_infrastruktur_terdampak': [
+    { label: 'Ekonomi', color: 'rgb(57, 106, 212)', shape: 'circle', borderColor: 'rgb(35, 35, 35)' },
+    { label: 'Infra Pertanian', color: 'rgb(40, 222, 192)', shape: 'circle', borderColor: 'rgb(35, 35, 35)' },
+    { label: 'Kesehatan', color: 'rgb(149, 84, 201)', shape: 'circle', borderColor: 'rgb(35, 35, 35)' },
+    { label: 'Pendidikan Negeri', color: 'rgb(97, 236, 94)', shape: 'circle', borderColor: 'rgb(35, 35, 35)' },
+    { label: 'Pendidikan Swasta', color: 'rgb(196, 212, 73)', shape: 'circle', borderColor: 'rgb(35, 35, 35)' },
+    { label: 'Perbankan', color: 'rgb(233, 94, 43)', shape: 'circle', borderColor: 'rgb(35, 35, 35)' },
+    { label: 'Lainnya', color: 'rgb(215, 34, 139)', shape: 'circle', borderColor: 'rgb(35, 35, 35)' }
   ],
-  'perkiraan_jumlah_keluarga_terdampak': [
-    { label: 'Tidak ada Keluarga Terdampak', color: 'rgba(255, 255, 255, 0.346)' },
-    { label: '0 - 500 Keluarga Terdampak', color: 'rgb(255, 128, 128)' },
-    { label: 'Diatas 500 Keluarga Terdampak', color: 'rgb(255, 0, 0)' }
+  'perkiraan_bangunan_tempat_tinggal_terdampak': [
+    { label: 'Tempat Tinggal Terdampak', color: 'rgb(255, 239, 4)', shape: 'circle', borderColor: 'rgb(179, 167, 3)' }
   ],
-  'rumah_tangga_dtsen': [
-    { label: 'Rumah Tangga Tani dalam Desa Bencana', color: 'rgb(255, 210, 0)', shape: 'circle', borderColor: 'rgb(255, 255, 255)' },
-    { label: 'Rumah Tangga Tani yang Diperkirakan Terdampak', color: 'rgb(231, 65, 90)', shape: 'circle', borderColor: 'rgb(255, 255, 255)' }
+  'desa_pendataan_bps-stis': [
+    { label: 'Desa Pendataan Organik BPS', color: 'rgb(207, 80, 182)', borderColor: 'rgb(32, 6, 6)' },
+    { label: 'Desa Pendataan STIS', color: 'rgb(190, 207, 80)', borderColor: 'rgb(35, 35, 35)' }
   ],
-  'rumah_tangga_pertanian': [
-    { label: 'Rumah Tangga Tani dalam Desa Bencana', color: 'rgb(51, 160, 44)', shape: 'circle', borderColor: 'rgb(255, 255, 255)' },
-    { label: 'Rumah Tangga Tani yang Diperkirakan Terdampak', color: 'rgb(231, 65, 90)', shape: 'circle', borderColor: 'rgb(255, 255, 255)' }
+  'desa_wilayah_bencana': [
+    { label: 'Desa Terkonfirmasi Terdampak (BNPB)', color: 'rgba(255, 0, 0, 0.698)', borderColor: 'rgb(32, 6, 6)' }
   ],
-  'infrastruktur_yang_diperkirakan_terdampak': [
-    { label: 'Ekonomi', color: 'rgb(255, 127, 0)', shape: 'circle' },
-    { label: 'Kesehatan', color: 'rgb(176, 200, 41)', shape: 'circle' },
-    { label: 'Pendidikan', color: 'rgb(152, 72, 213)', shape: 'circle' },
-    { label: 'Perbankan', color: 'rgb(206, 175, 238)', shape: 'circle' }
-  ],
-  'desa_sampel_pkl_polstat_stis_2026': [
-    { label: 'Desa Sampel PKL Polstat STIS 2026', color: 'rgb(38, 23, 206)', borderColor: 'rgb(35, 35, 35)' }
-  ],
-  'batas_wilayah_desa_kelurahan': [
+  'desa_kelurahan_nagari': [
     { label: 'Batas Wilayah Desa/Kelurahan', lineStyle: 'dashed', lineColor: 'rgb(215, 25, 28)' }
   ],
-  'batas_wilayah_kecamatan': [
+  'kecamatan': [
     { label: 'Batas Wilayah Kecamatan', lineStyle: 'dashed', lineColor: 'rgb(255, 127, 0)' }
   ],
-  'batas_wilayah_kabupaten_kota': [
+  'kabupaten_kota': [
     { label: 'Batas Wilayah Kabupaten/Kota', lineStyle: 'dashed', lineColor: 'rgb(0, 0, 0)' }
   ],
-  'batas_wilayah_provinsi': [
+  'provinsi': [
     { label: 'Batas Wilayah Provinsi', lineStyle: 'solid', lineColor: 'rgb(0, 0, 0)' }
   ]
 }

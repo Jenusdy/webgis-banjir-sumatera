@@ -1,5 +1,14 @@
 <template>
-  <div ref="mapContainer" class="w-full h-full"></div>
+  <div ref="mapContainer" class="w-full h-full relative">
+    <!-- Scroll indicator -->
+    <div
+      class="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000] bg-white/95 backdrop-blur-sm rounded-lg shadow-lg px-4 py-2.5 flex items-center gap-2 border border-slate-200">
+      <svg class="w-4 h-4 text-blue-600 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+      </svg>
+      <span class="text-xs font-medium text-slate-700">Scroll ke bawah untuk melihat tabel data</span>
+    </div>
+  </div>
 </template>
 
 <script setup>
