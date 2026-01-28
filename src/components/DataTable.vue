@@ -242,7 +242,7 @@
               <td class="px-2 py-2 sm:px-3 sm:py-2 border-b border-slate-200 text-center min-w-[110px]">
                 <div class="text-[10px] sm:text-xs text-green-700">{{
                   item.properties.area_lbs_tidak_terdampak.toFixed(2)
-                  }}</div>
+                }}</div>
               </td>
               <td class="px-2 py-2 sm:px-3 sm:py-2 border-b border-slate-200 text-center min-w-[100px]">
                 <div class="text-[10px] sm:text-xs text-red-700">{{ item.properties.area_lbs_terdampak.toFixed(2) }}
@@ -352,13 +352,13 @@ watch([searchQuery, filterProvinsi], () => {
 // Fetch data on mount
 onMounted(async () => {
   try {
-    const response = await fetch(`${import.meta.env.BASE_URL}data/data-statistik.json`)
+    const response = await fetch(`data-statistik.json`)
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     dataStatistik.value = await response.json()
   } catch (err) {
-    error.value = `Gagal memuat data: ${err.message}. Pastikan folder public/data tersedia.`
+    error.value = `Gagal memuat data: ${err.message}. Pastikan folder data tersedia.`
     console.error('Error fetching data:', err)
   } finally {
     isLoading.value = false
