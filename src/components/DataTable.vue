@@ -349,14 +349,60 @@ watch([searchQuery, filterProvinsi], () => {
   currentPage.value = 1
 })
 
+// Function to parse CSV text
+function parseCSV(text) {
+  // Split into lines and filter empty ones
+  const lines = text.trim().split('\n').filter(line => line.trim())
+  if (lines.length < 2) {
+    console.error('CSV has no data rows')
+    return { type: 'FeatureCollection', features: [] }
+  }
+
+  const headers = lines[0].split(',').map(h => h.trim())
+  console.log('CSV Headers:', headers)
+
+  const features = []
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(',').map(v => v.trim())
+    const properties = {}
+
+    headers.forEach((header, index) => {
+      const value = values[index]
+      // Convert numeric fields
+      if (header === 'idkab' || header.startsWith('infra_') || header.startsWith('jumlah_') || header.startsWith('area_')) {
+        const num = parseFloat(value)
+        properties[header] = isNaN(num) ? 0 : num
+      } else {
+        properties[header] = value
+      }
+    })
+
+    features.push({
+      type: 'Feature',
+      properties: properties
+    })
+  }
+
+  console.log('Parsed features:', features.length)
+  if (features.length > 0) {
+    console.log('First feature properties:', features[0].properties)
+  }
+
+  return {
+    type: 'FeatureCollection',
+    features: features
+  }
+}
+
 // Fetch data on mount
 onMounted(async () => {
   try {
-    const response = await fetch(`data-statistik.json`)
+    const response = await fetch(`data-statistik.csv`)
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    dataStatistik.value = await response.json()
+    const csvText = await response.text()
+    dataStatistik.value = parseCSV(csvText)
   } catch (err) {
     error.value = `Gagal memuat data: ${err.message}. Pastikan folder data tersedia.`
     console.error('Error fetching data:', err)
