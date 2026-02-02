@@ -305,7 +305,7 @@ const legendDefinitions = {
     { label: 'Desa Pendataan STIS', color: 'rgb(190, 207, 80)', borderColor: 'rgb(35, 35, 35)' }
   ],
   'desa_wilayah_bencana': [
-    { label: 'Desa Terkonfirmasi Terdampak (BNPB)', color: 'rgba(255, 0, 0, 0.698)', borderColor: 'rgb(32, 6, 6)' }
+    { label: 'Desa Terkonfirmasi Terdampak (Konfirmasi Daerah)', color: 'rgba(255, 0, 0, 0.698)', borderColor: 'rgb(32, 6, 6)' }
   ],
   'desa_kelurahan_nagari': [
     { label: 'Batas Wilayah Desa/Kelurahan', lineStyle: 'dashed', lineColor: 'rgb(215, 25, 28)' }
